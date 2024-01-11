@@ -73,7 +73,7 @@ post {
 
 }//pipeline closing
 
-//Function for slack notifications
+//Function for slack notification
 def sendSlackNotifications(String buildStatus = 'STARTED') {
   // build status of null means successful
   buildStatus =  buildStatus ?: 'SUCCESS'
