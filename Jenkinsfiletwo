@@ -3,6 +3,7 @@ pipeline {
     parameters {
         //string(name: 'VERSION', defaultValue: '', description: 'Version to deploy')
         choice(name: 'VERSION_CHOICE', choices: ['1.1.0', '1.2.0', '1.3.0'], description: 'Choose a version')
+        choice(name: 'BranchName', choices: ['master', 'dev'], description: 'Choose a version')
        // booleanParam(name: 'executeTests', defaultValue: true, description: 'Execute tests?')
     }
     
