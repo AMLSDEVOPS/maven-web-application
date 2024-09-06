@@ -45,6 +45,14 @@ pipeline {
             }
         }
 
+         stage('Branch') {
+            steps {
+                script {
+                   echo "Branch name is: ${env.BRANCH_NAME}"
+                }
+            }
+        }
+
         stage('Deploying the Application') {
             when {
                 expression {
