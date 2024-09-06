@@ -2,35 +2,47 @@ pipeline {
     agent any
     
     parameters {
+        // Parameter to select a version for deployment
         choice(name: 'VERSION_CHOICE', choices: ['1.1.0', '1.2.0', '1.3.0'], description: 'Choose a version')
+        
+        // Parameter to select the branch to deploy
         choice(name: 'BranchName', choices: ['master', 'dev'], description: 'Choose a branch')
+        
+        // Uncomment if you want to include a boolean parameter for executing tests
         // booleanParam(name: 'executeTests', defaultValue: true, description: 'Execute tests?')
     }
     
     tools {
+        // Specify the Maven tool to use
         maven 'maven3'
     }
     
     environment {
+        // Define a default environment variable for versioning
         NEW_VERSION = '1.3.0'
-        // SERVER_CREDENTIALS = credentials('server-credentials-id') // Replace with actual credentials ID
+        
+        // Uncomment and configure if you need to use credentials for server access
+        // SERVER_CREDENTIALS = credentials('server-credentials-id')
     }
 
     stages {
         stage('Cloning Repo') {
             steps {
+                // Checkout the source code from GitHub
                 git credentialsId: 'mvenkatgit', url: 'https://github.com/MithunTechnologiesDevOps/maven-web-application.git'
             }
         }
 
         stage('Running the Unit Tests') {
             steps {
+                // Output information about the branch and PR (if applicable)
                 echo "Building branch ${params.BranchName} for PR ${env.CHANGE_ID ?: 'N/A'}"
             }
         }
 
         stage('Testing the Application') {
             steps {
+                // Output build number, version, and selected version
                 echo "Running tests for Build Number: ${env.BUILD_NUMBER}"
                 echo "Building the Version of ${env.NEW_VERSION}"
                 echo "Selected Version: ${params.VERSION_CHOICE}"
@@ -39,6 +51,7 @@ pipeline {
         
         stage('Application') {
             steps {
+                // Output build number, version, and selected version (potentially redundant)
                 echo "Running tests for Build Number: ${env.BUILD_NUMBER}"
                 echo "Building the Version of ${env.NEW_VERSION}"
                 echo "Selected Version: ${params.VERSION_CHOICE}"
@@ -48,6 +61,7 @@ pipeline {
         stage('Branch') {
             steps {
                 script {
+                   // Output the branch name for verification
                    echo "Branch name is: ${params.BranchName}"
                 }
             }
@@ -56,22 +70,27 @@ pipeline {
         stage('Deploying the Application') {
             when {
                 expression {
+                    // Deploy only if the branch is 'dev' or 'master'
                     return params.BranchName == 'dev' || params.BranchName == 'master'
                 }
             }
             steps {
                 echo "Deploying to branch ${params.BranchName}"
-                // Uncomment and update this block if you need credentials and a deployment script
                 
+                // Uncomment and configure this block to use credentials and run a deployment script
+                /*
                 withCredentials([usernamePassword(credentialsId: 'system-user', usernameVariable: 'USER', passwordVariable: 'PWD')]) {
-                    // sh "some script here ${USER} ${PWD}"
+                    // Example deployment command using the credentials
+                    // sh "deploy.sh ${USER} ${PWD}"
                 }
+                */
             }
         }
         
         stage('Init') {
             steps {
                 script {
+                    // Load a Groovy script for additional functions
                     gv = load "script.groovy"
                 }
             }
@@ -80,6 +99,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+                    // Call the buildApp method from the loaded Groovy script
                     gv.buildApp()
                 }
             }
@@ -88,6 +108,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
+                    // Call the testApp method from the loaded Groovy script
                     gv.testApp()
                 }
             }
@@ -96,6 +117,7 @@ pipeline {
         stage('Deploying') {
             steps {
                 script {
+                    // Call the deployApp method from the loaded Groovy script
                     gv.deployApp() // Assuming method names are in camelCase
                 }
             }
@@ -103,6 +125,7 @@ pipeline {
 
         stage('Workspace Cleanup') {
             steps {
+                // Clean up the workspace after the pipeline completes
                 cleanWs()
             }
         }
@@ -110,14 +133,17 @@ pipeline {
 
     post {
         always {
+            // This block runs regardless of the pipeline result
             echo 'Pipeline completed'
         }
 
         success {
+            // This block runs if the pipeline succeeds
             echo 'Pipeline succeeded'
         }
 
         failure {
+            // This block runs if the pipeline fails
             echo 'Pipeline failed'
         }
     }
