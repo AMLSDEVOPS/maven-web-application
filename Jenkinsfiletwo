@@ -1,10 +1,10 @@
 pipeline {
     agent any
+    
     parameters {
-        //string(name: 'VERSION', defaultValue: '', description: 'Version to deploy')
         choice(name: 'VERSION_CHOICE', choices: ['1.1.0', '1.2.0', '1.3.0'], description: 'Choose a version')
-        choice(name: 'BranchName', choices: ['master', 'dev'], description: 'Choose a version')
-       // booleanParam(name: 'executeTests', defaultValue: true, description: 'Execute tests?')
+        choice(name: 'BranchName', choices: ['master', 'dev'], description: 'Choose a branch')
+        // booleanParam(name: 'executeTests', defaultValue: true, description: 'Execute tests?')
     }
     
     tools {
@@ -25,8 +25,7 @@ pipeline {
 
         stage('Running the Unit Tests') {
             steps {
-                echo "Building branch ${env.BRANCH_NAME} for PR ${env.CHANGE_ID ?: 'N/A'}"
-                // Added null check for CHANGE_ID to avoid issues if it's not set
+                echo "Building branch ${params.BranchName} for PR ${env.CHANGE_ID ?: 'N/A'}"
             }
         }
 
@@ -34,7 +33,7 @@ pipeline {
             steps {
                 echo "Running tests for Build Number: ${env.BUILD_NUMBER}"
                 echo "Building the Version of ${env.NEW_VERSION}"
-                echo "Building the Version of ${params.VERSION}"
+                echo "Selected Version: ${params.VERSION_CHOICE}"
             }
         }
         
@@ -42,14 +41,14 @@ pipeline {
             steps {
                 echo "Running tests for Build Number: ${env.BUILD_NUMBER}"
                 echo "Building the Version of ${env.NEW_VERSION}"
-                echo "Building the Version of ${params.VERSION}"
+                echo "Selected Version: ${params.VERSION_CHOICE}"
             }
         }
 
-         stage('Branch') {
+        stage('Branch') {
             steps {
                 script {
-                   echo "Branch name is: ${env.BRANCH_NAME}"
+                   echo "Branch name is: ${params.BranchName}"
                 }
             }
         }
@@ -57,17 +56,16 @@ pipeline {
         stage('Deploying the Application') {
             when {
                 expression {
-                    return env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'master'
+                    return params.BranchName == 'dev' || params.BranchName == 'master'
                 }
             }
             steps {
-                echo "Deploying to branch ${env.BRANCH_NAME}"
+                echo "Deploying to branch ${params.BranchName}"
                 // Uncomment and update this block if you need credentials and a deployment script
                 
                 withCredentials([usernamePassword(credentialsId: 'system-user', usernameVariable: 'USER', passwordVariable: 'PWD')]) {
                     sh "some script here ${USER} ${PWD}"
                 }
-                
             }
         }
         
