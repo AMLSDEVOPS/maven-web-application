@@ -63,8 +63,8 @@ pipeline {
                 echo "Deploying to branch ${params.BranchName}"
                 // Uncomment and update this block if you need credentials and a deployment script
                 
-               // withCredentials([usernamePassword(credentialsId: 'system-user', usernameVariable: 'USER', passwordVariable: 'PWD')]) {
-                    //sh "some script here ${USER} ${PWD}"
+                withCredentials([usernamePassword(credentialsId: 'system-user', usernameVariable: 'USER', passwordVariable: 'PWD')]) {
+                    // sh "some script here ${USER} ${PWD}"
                 }
             }
         }
